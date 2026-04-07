@@ -3,240 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام جار القمر v49 | المسح الشامل</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>نظام إدارة الشبكة - جار القمر</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg: #030612; --panel: #0f172a; --accent: #0ea5e9;
-            --gold: #eab308; --warn: #f97316; --danger: #ef4444;
-            --success: #22c55e; --text: #f1f5f9; --border: #1e293b;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-
-        .side-col { width: 300px; background: var(--panel); border-left: 1px solid var(--border); padding: 15px; overflow-y: auto; }
-        .main-col { flex: 1; background: #000; display: flex; flex-direction: column; overflow: hidden; }
-        
-        header { padding: 15px 25px; background: #111827; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
-
-        .tower-card { background: #1e293b; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 30px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .tower-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
-
-        .sector-box { background: rgba(255,255,255,0.02); border-right: 5px solid var(--accent); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-        .sector-box.full { border-right-color: var(--warn); }
-
-        .inputs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .inputs-row div label { font-size: 11px; color: var(--gold); display: block; margin-bottom: 3px; }
-        .inputs-row input { background: #020617; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-
-        .user-pill { background: #0f172a; border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; margin: 3px; display: inline-flex; align-items: center; gap: 8px; }
-        .user-pill input { background: transparent; border: none; color: #fff; font-size: 12px; width: 90px; outline: none; }
-
-        .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; transition: 0.3s; }
-        .btn-xl { background: var(--gold); color: #000; }
-        .btn-add { background: var(--success); color: #fff; }
-        .btn-go { background: var(--accent); color: #fff; padding: 5px 10px; font-size: 12px; }
-
-        .alert-item { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 10px; border-radius: 8px; margin-bottom: 10px; color: #fca5a5; font-size: 13px; }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-    </style>
 </head>
 <body>
 
-    <aside class="side-col">
-        <h2 style="color:var(--accent)">📊 إحصائيات</h2>
-        <div id="statsBox"></div>
-        <hr style="opacity:0.1; margin:20px 0;">
-        <h3 style="color:var(--danger)">⚠️ سكترات بحاجة لمتابعة</h3>
-        <div id="alertsBox"></div>
-    </aside>
-
-    <main class="main-col">
-        <header>
-            <h2 style="margin:0;"><i class="fas fa-network-wired"></i> جار القمر Pro v49</h2>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-add" onclick="addT()">+ برج يدوي</button>
-                <button class="btn btn-xl" onclick="document.getElementById('xlIn').click()">📥 استيراد الإكسل الشامل</button>
-                <input type="file" id="xlIn" hidden onchange="importXl(event)">
+    <div class="container">
+        <div class="stats-section">
+            <div class="header">
+                <h2>إحصائيات الشبكة <i class="fas fa-chart-line"></i></h2>
             </div>
-        </header>
-        <div id="mainStage" style="padding: 25px; overflow-y: auto; flex: 1;">
-            </div>
-    </main>
-
-    <aside class="side-col">
-        <h3>🔍 بحث سريع</h3>
-        <input type="text" id="searchBox" placeholder="ابحث عن أي شيء..." onkeyup="render()" style="width:100%; padding:12px; background:#000; border:1px solid var(--border); color:#fff; border-radius:10px;">
-        
-        <div style="margin-top:25px;">
-            <label>اختر البرج:</label>
-            <select id="towerSelector" onchange="render()" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid var(--border); border-radius:8px; margin-top:5px;"></select>
-        </div>
-
-        <div id="fastAccess" style="margin-top:30px;">
-            <h4 style="color:var(--gold)">دخول مباشر للأعطال:</h4>
-            <div id="fastLinks"></div>
-        </div>
-    </aside>
-
-<script>
-    let db = JSON.parse(localStorage.getItem('JAR_V49_DB')) || [];
-
-    // حذف برج سيد عصام العميدي نهائياً
-    db = db.filter(t => !t.name.includes("سيد عصام العميدي"));
-
-    function save() {
-        localStorage.setItem('JAR_V49_DB', JSON.stringify(db));
-        render();
-    }
-
-    function addT() {
-        let n = prompt("اسم البرج:");
-        if(n) { db.push({ name: n, ips: {sw:'', ma:'', sl:''}, sectors: [] }); save(); }
-    }
-
-    function openIP(ip) {
-        if(!ip || ip === '0.0.0.0') return;
-        window.open(`http://${ip.trim()}`, '_blank');
-    }
-
-    function render() {
-        const q = document.getElementById('searchBox').value.toLowerCase();
-        const f = document.getElementById('towerSelector').value;
-        const stage = document.getElementById('mainStage');
-
-        let html = ''; let alerts = ''; let fast = '';
-        let st = { t: db.length, s: 0, u: 0, err: 0 };
-
-        let opts = '<option value="all">كل الأبراج</option>';
-        db.forEach((t, i) => opts += `<option value="${i}">${t.name}</option>`);
-        document.getElementById('towerSelector').innerHTML = opts;
-        document.getElementById('towerSelector').value = f;
-
-        db.forEach((t, ti) => {
-            if(f !== 'all' && f != ti) return;
-
-            let sHTML = '';
-            t.sectors.forEach((s, si) => {
-                if(q && !JSON.stringify(s).toLowerCase().includes(q)) return;
-
-                st.s++; st.u += s.users.length;
-                let isErr = s.users.length >= 8 || !s.ip;
-
-                if(isErr) {
-                    st.err++;
-                    alerts += `<div class="alert-item">📍 ${t.name} > ${s.name || 'سكتر'} (${s.users.length >= 8 ? 'ممتلئ':'نقص IP'})</div>`;
-                    fast += `<button class="btn btn-go" style="width:100%; margin-bottom:5px; background:var(--warn)" onclick="openIP('${s.ip}')">${s.name} - دخول</button>`;
-                }
-
-                sHTML += `
-                <div class="sector-box ${isErr ? 'full' : ''}">
-                    <div class="inputs-row">
-                        <div><label>اسم السكتر</label><input value="${s.name}" onchange="db[${ti}].sectors[${si}].name=this.value; save()"></div>
-                        <div><label>IP السكتر</label><input value="${s.ip}" onchange="db[${ti}].sectors[${si}].ip=this.value; save()"></div>
-                        <div><label>موديل الجهاز</label><input value="${s.device}" placeholder="SXT, LHG..." onchange="db[${ti}].sectors[${si}].device=this.value; save()"></div>
-                    </div>
-                    <div style="margin-bottom:10px; display:flex; justify-content:space-between;">
-                        <span style="color:var(--accent); font-weight:bold;">${s.users.length} مستخدم</span>
-                        <button class="btn btn-go" onclick="openIP('${s.ip}')">دخول مباشر</button>
-                    </div>
-                    <div style="display:flex; flex-wrap:wrap;">
-                        ${s.users.map((u, ui) => `
-                            <div class="user-pill">
-                                <input value="${u}" onchange="db[${ti}].sectors[${si}].users[${ui}]=this.value; save()">
-                                <i class="fas fa-times" style="color:var(--danger); cursor:pointer; font-size:10px;" onclick="db[${ti}].sectors[${si}].users.splice(${ui},1); save()"></i>
-                            </div>
-                        `).join('')}
-                        <button class="btn btn-go" style="background:var(--success); border-radius:50%; width:24px; height:24px; padding:0;" onclick="let n=prompt('الاسم:'); if(n){db[${ti}].sectors[${si}].users.push(n); save()}">+</button>
-                    </div>
-                </div>`;
-            });
-
-            html += `
-            <div class="tower-card">
-                <div class="tower-header">
-                    <h2 style="margin:0; color:var(--accent);">${t.name}</h2>
-                    <span style="opacity:0.5">${t.sectors.length} سكتر</span>
-                    <i class="fas fa-trash" style="color:var(--danger); cursor:pointer;" onclick="if(confirm('حذف البرج؟')){db.splice(${ti},1); save()}"></i>
-                </div>
-                <div class="inputs-row" style="margin-bottom:20px;">
-                    ${['sw','ma','sl'].map(k => `
-                        <div style="background:#000; padding:10px; border-radius:10px; border:1px solid var(--border);">
-                            <label>${k.toUpperCase()}</label>
-                            <input value="${t.ips[k]}" onchange="db[${ti}].ips['${k}']=this.value; save()">
-                            <button class="btn btn-go" style="width:100%; margin-top:5px;" onclick="openIP('${t.ips[k]}')">دخول</button>
-                        </div>
-                    `).join('')}
-                </div>
-                <div>${sHTML}</div>
-                <button class="btn btn-add" style="width:100%; background:#0f172a;" onclick="db[${ti}].sectors.push({name:'', ip:'', device:'', users:[]}); save()">+ إضافة سكتر</button>
-            </div>`;
-        });
-
-        stage.innerHTML = html || '<center style="opacity:0.3; margin-top:100px;">ارفع ملف الإكسل للبدء</center>';
-        document.getElementById('statsBox').innerHTML = `
-            <div class="tower-card" style="text-align:center; padding:10px;">
-                <small>إجمالي المشتركين</small><h2 style="margin:0; color:var(--success);">${st.u}</h2>
-            </div>
-            <div class="tower-card" style="text-align:center; padding:10px;">
-                <small>إجمالي السكترات</small><h2 style="margin:0; color:var(--gold);">${st.s}</h2>
-            </div>
-        `;
-        document.getElementById('alertsBox').innerHTML = alerts || 'الشبكة مستقرة ✅';
-        document.getElementById('fastLinks').innerHTML = fast;
-    }
-
-    // محرك المسح الشامل v49 (أفقي وعمودي)
-    function importXl(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const data = new Uint8Array(ev.target.result);
-            const wb = XLSX.read(data, {type: 'array'});
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
             
-            let curT = null;
+            <div class="stat-card">
+                <span>إجمالي المشتركين</span>
+                <h1 id="total-subs">89</h1>
+            </div>
 
-            rows.forEach((row, rIdx) => {
-                if(!row || row.length === 0) return;
-                
-                // تحويل كل الخلايا في الصف لنص لسهولة البحث
-                const rowCells = row.map(c => String(c || '').trim());
-                const rowStr = rowCells.join(' ').toLowerCase();
+            <div class="stat-card">
+                <span>إجمالي السكترات</span>
+                <h1 id="total-sectors" style="color: #f1c40f;">13</h1>
+            </div>
 
-                // 1. كشف البرج
-                if(rowStr.includes("برج")) {
-                    let tName = rowCells.find(c => c.includes("برج"));
-                    curT = { name: tName, ips: {sw:'', ma:'', sl:''}, sectors: [] };
-                    db.push(curT);
-                } 
-                // 2. كشف السكتر (أي صف يحتوي على آي بي 10.205)
-                else if (curT && rowCells.some(c => c.includes("10.205."))) {
-                    let ipIdx = rowCells.findIndex(c => c.includes("10.205."));
-                    let sIP = rowCells[ipIdx];
-                    let sName = rowCells[1] || rowCells[0] || "سكتر";
-                    let newS = { name: sName, ip: sIP, device: '', users: [] };
-                    
-                    // 3. المسح الأفقي العميق (من العمود 0 إلى 200) لجمع كل المشتركين
-                    rowCells.forEach((cell, cIdx) => {
-                        // شروط سحب اسم المشترك:
-                        // ليس فارغاً، ليس هو الـ IP نفسه، طوله أكثر من حرفين، وليس اسم السكتر نفسه
-                        if(cell && cell.length > 2 && cIdx !== ipIdx && !cell.includes("10.205") && cell !== sName) {
-                            newS.users.push(cell);
-                        }
-                    });
-                    curT.sectors.push(newS);
-                }
-            });
-            save();
-            alert("تم المسح الشامل! برج الأمين وكافة الأبراج مستوردة بالكامل.");
-        };
-        reader.readAsArrayBuffer(e.target.files[0]);
-    }
+            <hr style="border: 0.5px solid #30363d; margin: 20px 0;">
 
-    window.onload = render;
-</script>
+            <div class="warning-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> تنبيهات المتابعة</h3>
+            </div>
+
+            <div id="status-list" class="status-list">
+                </div>
+        </div>
+
+        <div class="control-section">
+            <div class="search-box">
+                <label>بحث سريع <i class="fas fa-search"></i></label>
+                <input type="text" id="searchInput" placeholder="ابحث عن اسم، رقم، أو برج...">
+            </div>
+
+            <div class="tower-select">
+                <label>تصفية حسب البرج:</label>
+                <select id="towerFilter">
+                    <option value="all">كل الأبراج</option>
+                    <option value="برج احسان 4">برج احسان 4</option>
+                    <option value="برج المركز">برج المركز</option>
+                    <option value="برج كرار">برج كرار</option>
+                </select>
+            </div>
+
+            <div class="quick-links">
+                <p>اختصارات الدخول:</p>
+                <div id="quick-buttons">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
