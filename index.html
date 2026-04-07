@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام جار القمر Pro v49</title>
+    <title>جار القمر Pro v49</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -14,21 +14,23 @@
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* توزيع الأعمدة حسب الصورة */
-        .side-right { width: 300px; background: var(--panel); border-left: 1px solid var(--border); padding: 15px; overflow-y: auto; order: 1; }
-        .main-col { flex: 1; background: #000; display: flex; flex-direction: column; overflow: hidden; order: 2; border-right: 2px solid var(--accent); }
-        .side-left { width: 300px; background: var(--panel); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; order: 3; }
+        /* تقسيم الشاشة إلى 3 أعمدة كما في الصورة */
+        .side-right { width: 300px; background: var(--panel); border-left: 1px solid var(--border); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+        .main-col { flex: 1; background: #000; display: flex; flex-direction: column; overflow: hidden; border-right: 2px solid var(--accent); }
+        .side-left { width: 300px; background: var(--panel); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; }
 
         header { padding: 15px 25px; background: #111827; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
         .tower-card { background: #1e293b; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 30px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .sector-box { background: rgba(255,255,255,0.02); border-right: 5px solid var(--accent); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .sector-box { background: rgba(255,255,255,0.02); border-right: 5px solid var(--accent); border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
         .inputs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .inputs-row input { background: #020617; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; text-align: center; }
+        .inputs-row input { background: #020617; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; text-align: center; }
         .user-pill { background: #0f172a; border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; margin: 3px; display: inline-flex; font-size: 12px; }
+        
         .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; }
         .btn-xl { background: var(--gold); color: #000; }
         .btn-add { background: var(--success); color: #fff; }
-        select, .search-in { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 10px; margin-top: 10px; }
+        
+        select, .search-in { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 10px; margin-top: 10px; font-size: 14px; }
         .stat-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 10px; text-align: center; border: 1px solid var(--border); }
     </style>
 </head>
@@ -36,17 +38,22 @@
 
     <aside class="side-right">
         <h3>🔍 بحث سريع</h3>
-        <input type="text" class="search-in" id="searchBox" placeholder="ابحث عن مشترك..." onkeyup="render()">
+        <input type="text" class="search-in" id="searchBox" placeholder="ابحث عن مشترك أو IP..." onkeyup="render()">
+        
         <div style="margin-top:25px;">
-            <label>اختر البرج:</label>
+            <label><i class="fas fa-broadcast-tower"></i> اختر البرج:</label>
             <select id="towerSelector" onchange="render()"></select>
         </div>
-        <div id="fastLinks" style="margin-top:30px;"></div>
+        
+        <div id="fastLinks" style="margin-top:30px;">
+             <h4 style="color:var(--gold)">دخول مباشر للأعطال:</h4>
+             <div id="linksArea"></div>
+        </div>
     </aside>
 
     <main class="main-col">
         <header>
-            <h2 style="margin:0;">جار القمر Pro v49</h2>
+            <h2 style="margin:0;"><i class="fas fa-network-wired"></i> جار القمر Pro v49</h2>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-add" onclick="addT()">+ برج يدوي</button>
                 <button class="btn btn-xl" onclick="document.getElementById('xlIn').click()">📥 استيراد الإكسل الشامل</button>
@@ -54,23 +61,30 @@
             </div>
         </header>
         <div id="mainStage" style="padding: 25px; overflow-y: auto; flex: 1;">
-            <center style="opacity:0.3; margin-top:100px;">ارفع ملف الإكسل (برج الربيتر، برج احسان...)</center>
+            <center id="emptyMsg" style="opacity:0.3; margin-top:100px;">ارفع ملف الإكسل (برج الربيتر، برج احسان...) للبدء</center>
         </div>
     </main>
 
     <aside class="side-left">
-        <h2 style="color:var(--accent); text-align:center;">📊 إحصائيات</h2>
+        <h2 style="color:var(--accent); text-align:center;"><i class="fas fa-chart-line"></i> إحصائيات</h2>
         <div id="statsBox"></div>
-        <h3 style="color:var(--danger)">⚠️ سكترات ممتلئة</h3>
+        <hr style="opacity:0.1; margin:20px 0;">
+        <h3 style="color:var(--danger)">⚠️ سكترات بحاجة لمتابعة</h3>
         <div id="alertsBox"></div>
     </aside>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('JAR_V49_DB')) || [];
+    // استخدام LocalStorage لحين ربط Firebase
+    let db = JSON.parse(localStorage.getItem('JAR_ALQAMER_V49')) || [];
 
     function save() {
-        localStorage.setItem('JAR_V49_DB', JSON.stringify(db));
+        localStorage.setItem('JAR_ALQAMER_V49', JSON.stringify(db));
         render();
+    }
+
+    function addT() {
+        let n = prompt("اسم البرج الجديد:");
+        if(n) { db.push({name: n, sectors: []}); save(); }
     }
 
     function render() {
@@ -78,9 +92,11 @@
         const f = document.getElementById('towerSelector').value;
         const stage = document.getElementById('mainStage');
 
-        let html = ''; let alerts = ''; let opts = '<option value="all">كل الأبراج</option>';
+        let html = ''; let alerts = ''; let fast = '';
         let st = { u: 0, s: 0 };
 
+        // تحديث قائمة الأبراج
+        let opts = '<option value="all">كل الأبراج</option>';
         db.forEach((t, i) => {
             opts += `<option value="${i}">${t.name}</option>`;
             if(f !== 'all' && f != i && f !== "") return;
@@ -89,28 +105,38 @@
             t.sectors.forEach((s) => {
                 if(q && !JSON.stringify(s).toLowerCase().includes(q)) return;
                 st.s++; st.u += s.users.length;
-                if(s.users.length >= 8) alerts += `<div class="stat-card" style="color:var(--danger)">📍 ${t.name} > ${s.name}</div>`;
+                
+                let isFull = s.users.length >= 8;
+                if(isFull) {
+                    alerts += `<div class="stat-card" style="border-color:var(--danger); color:var(--danger)">📍 ${t.name} > ${s.name}</div>`;
+                    fast += `<button class="btn" style="width:100%; margin-bottom:5px; background:var(--warn); color:#fff" onclick="window.open('http://${s.ip}')">${s.name} - دخول</button>`;
+                }
 
                 sHTML += `
-                <div class="sector-box">
+                <div class="sector-box ${isFull ? 'full' : ''}">
                     <div class="inputs-row">
-                        <input value="${s.name}"> <input value="${s.ip}"> <input value="${s.device}">
+                        <input value="${s.name}" readonly> <input value="${s.ip}" readonly> <input value="${s.device || 'SXT/LHG'}" readonly>
                     </div>
-                    <div style="margin-bottom:10px; color:var(--accent)"><b>${s.users.length} مستخدم</b></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="color:var(--accent); font-weight:bold;">${s.users.length} مستخدم</span>
+                        <button class="btn" style="background:var(--accent); color:#fff; padding:5px 10px;" onclick="window.open('http://${s.ip}')">دخول</button>
+                    </div>
                     <div>${s.users.map(u => `<span class="user-pill">${u}</span>`).join('')}</div>
                 </div>`;
             });
 
-            html += `<div class="tower-card"><h2 style="color:var(--accent)">${t.name}</h2>${sHTML}</div>`;
+            html += `<div class="tower-card"><h2 style="color:var(--accent); text-align:center; border-bottom:1px solid var(--border); padding-bottom:10px;">${t.name}</h2>${sHTML}</div>`;
         });
 
         document.getElementById('towerSelector').innerHTML = opts;
         if(f) document.getElementById('towerSelector').value = f;
-        stage.innerHTML = html;
+
+        stage.innerHTML = html || '<center style="opacity:0.3; margin-top:100px;">لا توجد بيانات، ارفع ملف الإكسل</center>';
         document.getElementById('statsBox').innerHTML = `
-            <div class="stat-card"><small>المشتركين</small><h2>${st.u}</h2></div>
-            <div class="stat-card"><small>السكترات</small><h2>${st.s}</h2></div>`;
+            <div class="stat-card"><small>إجمالي المشتركين</small><h2 style="color:var(--success); margin:5px 0;">${st.u}</h2></div>
+            <div class="stat-card"><small>إجمالي السكترات</small><h2 style="color:var(--gold); margin:5px 0;">${st.s}</h2></div>`;
         document.getElementById('alertsBox').innerHTML = alerts || 'الشبكة مستقرة ✅';
+        document.getElementById('linksArea').innerHTML = fast;
     }
 
     function importXl(e) {
@@ -119,6 +145,7 @@
             const data = new Uint8Array(ev.target.result);
             const wb = XLSX.read(data, {type: 'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
+            
             db = []; let curT = null;
             rows.forEach(row => {
                 const cells = row.map(c => String(c || '').trim());
@@ -126,10 +153,15 @@
                     curT = { name: cells.find(c => c.includes("برج")), sectors: [] };
                     db.push(curT);
                 } else if (curT && cells.some(c => c.includes("10.205."))) {
-                    curT.sectors.push({ name: cells[1] || "سكتر", ip: cells.find(c => c.includes("10.205.")), device: 'SXT/LHG', users: cells.filter(c => c.length > 2 && !c.includes("10.205") && !c.includes("برج")) });
+                    curT.sectors.push({ 
+                        name: cells[1] || "سكتر", 
+                        ip: cells.find(c => c.includes("10.205.")), 
+                        users: cells.filter(c => c.length > 2 && !c.includes("10.205") && !c.includes("برج")) 
+                    });
                 }
             });
             save();
+            alert("تم سحب البيانات بنجاح!");
         };
         reader.readAsArrayBuffer(e.target.files[0]);
     }
