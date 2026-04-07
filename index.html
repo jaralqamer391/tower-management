@@ -3,89 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جار القمر Pro v49 | النظام الشامل</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>نظام جار القمر Pro v49 | السحابة الذكية</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #030612; --panel: #0f172a; --accent: #0ea5e9;
+            --gold: #eab308; --warn: #f97316; --danger: #ef4444;
+            --success: #22c55e; --text: #f1f5f9; --border: #1e293b;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .side-col { width: 300px; background: var(--panel); border-left: 1px solid var(--border); padding: 15px; overflow-y: auto; }
+        .main-col { flex: 1; background: #000; display: flex; flex-direction: column; overflow: hidden; }
+        header { padding: 15px 25px; background: #111827; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .tower-card { background: #1e293b; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 30px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .tower-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+        .sector-box { background: rgba(255,255,255,0.02); border-right: 5px solid var(--accent); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .sector-box.full { border-right-color: var(--warn); }
+        .inputs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .inputs-row div label { font-size: 11px; color: var(--gold); display: block; margin-bottom: 3px; }
+        .inputs-row input { background: #020617; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        .user-pill { background: #0f172a; border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; margin: 3px; display: inline-flex; align-items: center; gap: 8px; }
+        .user-pill input { background: transparent; border: none; color: #fff; font-size: 12px; width: 90px; outline: none; }
+        .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; transition: 0.3s; }
+        .btn-xl { background: var(--gold); color: #000; }
+        .btn-add { background: var(--success); color: #fff; }
+        .btn-go { background: var(--accent); color: #fff; padding: 5px 10px; font-size: 12px; }
+        .alert-item { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 10px; border-radius: 8px; margin-bottom: 10px; color: #fca5a5; font-size: 13px; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
 </head>
 <body>
 
-    <div class="top-nav">
-        <div class="logo"> <i class="fas fa-network-wired"></i> جار القمر Pro v49 </div>
-        <div class="top-buttons">
-            <button class="btn-green"> <i class="fas fa-plus"></i> برج يدوي </button>
-            <label for="excel-upload" class="btn-yellow">
-                <i class="fas fa-file-download"></i> استيراد الإكسل الشامل
-            </label>
-            <input type="file" id="excel-upload" accept=".xlsx, .xls" style="display:none">
+    <aside class="side-col">
+        <h2 style="color:var(--accent)">📊 إحصائيات سحابية</h2>
+        <div id="statsBox"></div>
+        <hr style="opacity:0.1; margin:20px 0;">
+        <h3 style="color:var(--danger)">⚠️ سكترات بحاجة لمتابعة</h3>
+        <div id="alertsBox"></div>
+    </aside>
+
+    <main class="main-col">
+        <header>
+            <h2 style="margin:0;"><i class="fas fa-cloud-upload-alt"></i> جار القمر v49 Pro</h2>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-xl" onclick="document.getElementById('xlIn').click()">📥 استيراد الإكسل لجميع الأجهزة</button>
+                <input type="file" id="xlIn" hidden onchange="importXl(event)">
+            </div>
+        </header>
+        <div id="mainStage" style="padding: 25px; overflow-y: auto; flex: 1;">
+            <center id="loadingMsg" style="margin-top:100px; opacity:0.5;">جاري جلب البيانات من السحابة...</center>
         </div>
-    </div>
+    </main>
 
-    <div class="main-layout">
-        <div class="right-sidebar">
-            <div class="search-section">
-                <h3><i class="fas fa-search"></i> بحث سريع</h3>
-                <input type="text" id="searchInput" placeholder="ابحث عن أي شيء...">
-                
-                <label>اختر البرج:</label>
-                <select id="towerFilter">
-                    <option>برج احسان 4</option>
-                    <option>برج المركز</option>
-                </select>
-            </div>
-
-            <div class="alerts-section">
-                <h3 style="color: #ff4757;"><i class="fas fa-exclamation-triangle"></i> دخول مباشر للأعطال:</h3>
-                <div id="quick-links">
-                    <button class="btn-orange">دخول - Karrar-B2-07814120492</button>
-                    <button class="btn-orange">دخول - Karrar-C1-07814120492</button>
-                </div>
-            </div>
+    <aside class="side-col">
+        <h3>🔍 بحث شامل</h3>
+        <input type="text" id="searchBox" placeholder="ابحث في كل الأجهزة..." onkeyup="render()" style="width:100%; padding:12px; background:#000; border:1px solid var(--border); color:#fff; border-radius:10px;">
+        <div id="fastAccess" style="margin-top:30px;">
+            <h4 style="color:var(--gold)">دخول سريع (أونلاين):</h4>
+            <div id="fastLinks"></div>
         </div>
+    </aside>
 
-        <div class="content-area">
-            <div class="tower-header">
-                <span class="tower-title">برج احسان 4</span>
-                <span class="sector-count">13 سكتر</span>
-                <i class="fas fa-trash delete-icon"></i>
-            </div>
+<script>
+    // --- إعدادات FIREBASE (يجب استبدالها ببيانات مشروعك) ---
+    const firebaseConfig = {
+        databaseURL: "https://jar-alqamer-default-rtdb.firebaseio.com/" 
+    };
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref('tower_data');
 
-            <div class="sectors-grid" id="main-display">
-                <div class="sector-card">
-                    <div class="sector-info">
-                        <div class="info-row"><span>اسم السكتر:</span> <strong>Karrar-A1-07814120492</strong></div>
-                        <div class="info-row"><span>IP السكتر:</span> <strong>10.205.235.5</strong></div>
-                        <div class="info-row"><span>موديل الجهاز:</span> <strong>SXT, LHG...</strong></div>
+    let db = [];
+
+    // جلب البيانات فور فتح الصفحة من أي جهاز
+    dbRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            db = data;
+            document.getElementById('loadingMsg').style.display = 'none';
+            render();
+        } else {
+            document.getElementById('loadingMsg').innerHTML = 'ارفع ملف الإكسل ليتم مزامنته مع بقية الأجهزة';
+        }
+    });
+
+    function save() {
+        dbRef.set(db); // حفظ في السحابة بدلاً من الجهاز
+    }
+
+    function openIP(ip) {
+        if(!ip || ip === '0.0.0.0') return;
+        window.open(`http://${ip.trim()}`, '_blank');
+    }
+
+    function render() {
+        const q = document.getElementById('searchBox').value.toLowerCase();
+        const stage = document.getElementById('mainStage');
+        let html = ''; let alerts = ''; let fast = '';
+        let st = { t: db.length, s: 0, u: 0, err: 0 };
+
+        db.forEach((t, ti) => {
+            let sHTML = '';
+            t.sectors.forEach((s, si) => {
+                if(q && !JSON.stringify(s).toLowerCase().includes(q)) return;
+                st.s++; st.u += s.users.length;
+                let isErr = s.users.length >= 8 || !s.ip;
+
+                if(isErr) {
+                    st.err++;
+                    alerts += `<div class="alert-item">📍 ${t.name} > ${s.name}</div>`;
+                    fast += `<button class="btn btn-go" style="width:100%; margin-bottom:5px; background:var(--warn)" onclick="openIP('${s.ip}')">${s.name}</button>`;
+                }
+
+                sHTML += `
+                <div class="sector-box ${isErr ? 'full' : ''}">
+                    <div class="inputs-row">
+                        <div><label>السكتر</label><input value="${s.name}" onchange="db[${ti}].sectors[${si}].name=this.value; save()"></div>
+                        <div><label>IP</label><input value="${s.ip}" onchange="db[${ti}].sectors[${si}].ip=this.value; save()"></div>
+                        <div><label>الجهاز</label><input value="${s.device}" onchange="db[${ti}].sectors[${si}].device=this.value; save()"></div>
                     </div>
-                    <div class="users-section">
-                        <span class="user-count">6 مستخدم</span>
-                        <div class="user-tags">
-                            <span>مصطفى صلاح هلال <i class="fas fa-times"></i></span>
-                            <span>علاء عبد الله مطلب <i class="fas fa-times"></i></span>
-                        </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="color:var(--accent)">${s.users.length} مشترك</span>
+                        <button class="btn btn-go" onclick="openIP('${s.ip}')">دخول مباشر</button>
                     </div>
-                    <button class="btn-login" onclick="window.open('http://10.205.235.5')">دخول مباشر</button>
-                </div>
-            </div>
-        </div>
+                </div>`;
+            });
 
-        <div class="left-sidebar">
-            <h3><i class="fas fa-chart-pie"></i> إحصائيات</h3>
-            <div class="stat-box">
-                <p>إجمالي المشتركين</p>
-                <h2 style="color: #2ecc71;">89</h2>
-            </div>
-            <div class="stat-box">
-                <p>إجمالي السكترات</p>
-                <h2 style="color: #f1c40f;">13</h2>
-            </div>
-            <div class="alert-list">
-                <p style="color: #e74c3c;">📍 سكترات بحاجة لمتابعة</p>
-                <div class="alert-item">📍 برج احسان 4 (ممتلئ)</div>
-            </div>
-        </div>
-    </div>
+            html += `<div class="tower-card">
+                <div class="tower-header"><h2>${t.name}</h2></div>
+                <div>${sHTML}</div>
+            </div>`;
+        });
 
-    <script src="script.js"></script>
+        stage.innerHTML = html;
+        document.getElementById('statsBox').innerHTML = `<div class="tower-card" style="text-align:center">إجمالي المشتركين: ${st.u}</div>`;
+        document.getElementById('alertsBox').innerHTML = alerts || 'الشبكة مستقرة ✅';
+        document.getElementById('fastLinks').innerHTML = fast;
+    }
+
+    function importXl(e) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const data = new Uint8Array(ev.target.result);
+            const wb = XLSX.read(data, {type: 'array'});
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
+            
+            db = []; // تفريغ القديم للرفع الجديد
+            let curT = null;
+
+            rows.forEach((row) => {
+                if(!row || row.length === 0) return;
+                const rowCells = row.map(c => String(c || '').trim());
+                if(rowCells.join(' ').includes("برج")) {
+                    curT = { name: rowCells.find(c => c.includes("برج")), sectors: [] };
+                    db.push(curT);
+                } else if (curT && rowCells.some(c => c.includes("10.205."))) {
+                    let ip = rowCells.find(c => c.includes("10.205."));
+                    let s = { name: rowCells[1] || "سكتر", ip: ip, device: '', users: rowCells.filter(c => c.length > 2 && !c.includes("10.205") && !c.includes("برج")) };
+                    curT.sectors.push(s);
+                }
+            });
+            save(); // رفع للسحابة فوراً
+            alert("تم الرفع والمزامنة مع جميع الأجهزة!");
+        };
+        reader.readAsArrayBuffer(e.target.files[0]);
+    }
+</script>
 </body>
 </html>
