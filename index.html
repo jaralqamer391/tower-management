@@ -3,64 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جار القمر Pro v49 | النظام الشامل</title>
-    
+    <title>نظام جار القمر Pro v49</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         :root {
             --bg: #030612; --panel: #0f172a; --accent: #0ea5e9;
             --gold: #eab308; --warn: #f97316; --danger: #ef4444;
             --success: #22c55e; --text: #f1f5f9; --border: #1e293b;
         }
-
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .side-col { width: 300px; background: var(--panel); border-left: 1px solid var(--border); padding: 15px; overflow-y: auto; }
-        .main-col { flex: 1; background: #000; display: flex; flex-direction: column; overflow: hidden; }
-        header { padding: 15px 25px; background: #111827; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
-
-        .tower-card { background: #1e293b; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 30px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        .tower-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; color: var(--accent); }
-
-        .sector-box { background: rgba(255,255,255,0.02); border-right: 5px solid var(--accent); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-        .sector-box.full { border-right-color: var(--danger); }
-
-        .inputs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .inputs-row label { font-size: 11px; color: var(--gold); display: block; margin-bottom: 3px; }
-        .inputs-row input { background: #020617; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; }
-
-        .user-pill { background: #0f172a; border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; margin: 3px; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; }
         
-        .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; transition: 0.3s; }
+        /* توزيع الأعمدة حسب الصورة */
+        .side-right { width: 300px; background: var(--panel); border-left: 1px solid var(--border); padding: 15px; overflow-y: auto; order: 1; }
+        .main-col { flex: 1; background: #000; display: flex; flex-direction: column; overflow: hidden; order: 2; border-right: 2px solid var(--accent); }
+        .side-left { width: 300px; background: var(--panel); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; order: 3; }
+
+        header { padding: 15px 25px; background: #111827; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .tower-card { background: #1e293b; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 30px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .sector-box { background: rgba(255,255,255,0.02); border-right: 5px solid var(--accent); border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .inputs-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .inputs-row input { background: #020617; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; text-align: center; }
+        .user-pill { background: #0f172a; border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; margin: 3px; display: inline-flex; font-size: 12px; }
+        .btn { cursor: pointer; border: none; border-radius: 8px; padding: 10px 18px; font-weight: bold; }
         .btn-xl { background: var(--gold); color: #000; }
         .btn-add { background: var(--success); color: #fff; }
-        .btn-go { background: var(--accent); color: #fff; padding: 5px 10px; font-size: 12px; }
-
-        .stat-item { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 10px; text-align: center; border: 1px solid var(--border); }
-        select, input[type="text"] { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 10px; margin-top: 5px; }
+        select, .search-in { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 10px; margin-top: 10px; }
+        .stat-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 10px; text-align: center; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-    <aside class="side-col">
+    <aside class="side-right">
         <h3>🔍 بحث سريع</h3>
-        <input type="text" id="searchBox" placeholder="ابحث عن أي شيء..." onkeyup="render()">
-        
+        <input type="text" class="search-in" id="searchBox" placeholder="ابحث عن مشترك..." onkeyup="render()">
         <div style="margin-top:25px;">
-            <label><i class="fas fa-broadcast-tower"></i> اختر البرج:</label>
+            <label>اختر البرج:</label>
             <select id="towerSelector" onchange="render()"></select>
         </div>
-
-        <div style="margin-top:30px;">
-            <h4 style="color:var(--gold)">دخول مباشر للأعطال:</h4>
-            <div id="fastLinks"></div>
-        </div>
+        <div id="fastLinks" style="margin-top:30px;"></div>
     </aside>
 
     <main class="main-col">
         <header>
-            <h2 style="margin:0;"><i class="fas fa-network-wired"></i> جار القمر Pro v49</h2>
+            <h2 style="margin:0;">جار القمر Pro v49</h2>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-add" onclick="addT()">+ برج يدوي</button>
                 <button class="btn btn-xl" onclick="document.getElementById('xlIn').click()">📥 استيراد الإكسل الشامل</button>
@@ -68,20 +54,18 @@
             </div>
         </header>
         <div id="mainStage" style="padding: 25px; overflow-y: auto; flex: 1;">
-            <center style="opacity:0.3; margin-top:100px;">ارفع ملف الإكسل للبدء بمزامنة البيانات</center>
+            <center style="opacity:0.3; margin-top:100px;">ارفع ملف الإكسل (برج الربيتر، برج احسان...)</center>
         </div>
     </main>
 
-    <aside class="side-col">
+    <aside class="side-left">
         <h2 style="color:var(--accent); text-align:center;">📊 إحصائيات</h2>
         <div id="statsBox"></div>
-        <hr style="opacity:0.1; margin:20px 0;">
-        <h3 style="color:var(--danger)">⚠️ سكترات بحاجة لمتابعة</h3>
+        <h3 style="color:var(--danger)">⚠️ سكترات ممتلئة</h3>
         <div id="alertsBox"></div>
     </aside>
 
 <script>
-    // الحفظ المحلي (Local Storage) لضمان العمل حتى بدون إنترنت مؤقتاً
     let db = JSON.parse(localStorage.getItem('JAR_V49_DB')) || [];
 
     function save() {
@@ -89,107 +73,66 @@
         render();
     }
 
-    function addT() {
-        let n = prompt("اسم البرج:");
-        if(n) { db.push({ name: n, sw:'', ma:'', sl:'', sectors: [] }); save(); }
-    }
-
     function render() {
         const q = document.getElementById('searchBox').value.toLowerCase();
         const f = document.getElementById('towerSelector').value;
         const stage = document.getElementById('mainStage');
 
-        let html = ''; let alerts = ''; let fast = '';
-        let st = { t: db.length, s: 0, u: 0, err: 0 };
+        let html = ''; let alerts = ''; let opts = '<option value="all">كل الأبراج</option>';
+        let st = { u: 0, s: 0 };
 
-        // تحديث قائمة اختيار الأبراج
-        let opts = '<option value="all">كل الأبراج</option>';
-        db.forEach((t, i) => opts += `<option value="${i}">${t.name}</option>`);
-        document.getElementById('towerSelector').innerHTML = opts;
-        if(f) document.getElementById('towerSelector').value = f;
-
-        db.forEach((t, ti) => {
-            if(f !== 'all' && f != ti && f !== "") return;
+        db.forEach((t, i) => {
+            opts += `<option value="${i}">${t.name}</option>`;
+            if(f !== 'all' && f != i && f !== "") return;
 
             let sHTML = '';
-            t.sectors.forEach((s, si) => {
+            t.sectors.forEach((s) => {
                 if(q && !JSON.stringify(s).toLowerCase().includes(q)) return;
-
                 st.s++; st.u += s.users.length;
-                let isErr = s.users.length >= 8;
-
-                if(isErr) {
-                    st.err++;
-                    alerts += `<div class="stat-item" style="border-color:var(--danger)">📍 ${t.name} > ${s.name}</div>`;
-                    fast += `<button class="btn btn-go" style="width:100%; margin-bottom:5px; background:var(--warn)" onclick="window.open('http://${s.ip}')">${s.name} - دخول</button>`;
-                }
+                if(s.users.length >= 8) alerts += `<div class="stat-card" style="color:var(--danger)">📍 ${t.name} > ${s.name}</div>`;
 
                 sHTML += `
-                <div class="sector-box ${isErr ? 'full' : ''}">
+                <div class="sector-box">
                     <div class="inputs-row">
-                        <div><label>اسم السكتر</label><input value="${s.name}" onchange="db[${ti}].sectors[${si}].name=this.value; save()"></div>
-                        <div><label>IP السكتر</label><input value="${s.ip}" onchange="db[${ti}].sectors[${si}].ip=this.value; save()"></div>
-                        <div><label>موديل الجهاز</label><input value="${s.device}" onchange="db[${ti}].sectors[${si}].device=this.value; save()"></div>
+                        <input value="${s.name}"> <input value="${s.ip}"> <input value="${s.device}">
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <span style="color:var(--accent); font-weight:bold;">${s.users.length} مستخدم</span>
-                        <button class="btn btn-go" onclick="window.open('http://${s.ip}')">دخول مباشر</button>
-                    </div>
+                    <div style="margin-bottom:10px; color:var(--accent)"><b>${s.users.length} مستخدم</b></div>
                     <div>${s.users.map(u => `<span class="user-pill">${u}</span>`).join('')}</div>
                 </div>`;
             });
 
-            html += `
-            <div class="tower-card">
-                <div class="tower-header"><h2>${t.name}</h2> <small>${t.sectors.length} سكتر</small></div>
-                <div class="inputs-row" style="margin-bottom:20px;">
-                    <div><label>SW</label><input value="${t.sw || ''}" onchange="db[${ti}].sw=this.value; save()"></div>
-                    <div><label>MA</label><input value="${t.ma || ''}" onchange="db[${ti}].ma=this.value; save()"></div>
-                    <div><label>SL</label><input value="${t.sl || ''}" onchange="db[${ti}].sl=this.value; save()"></div>
-                </div>
-                ${sHTML}
-            </div>`;
+            html += `<div class="tower-card"><h2 style="color:var(--accent)">${t.name}</h2>${sHTML}</div>`;
         });
 
-        stage.innerHTML = html || '<center style="opacity:0.3; margin-top:100px;">ارفع ملف الإكسل للبدء</center>';
+        document.getElementById('towerSelector').innerHTML = opts;
+        if(f) document.getElementById('towerSelector').value = f;
+        stage.innerHTML = html;
         document.getElementById('statsBox').innerHTML = `
-            <div class="stat-item"><small>إجمالي المشتركين</small><h2 style="color:var(--success)">${st.u}</h2></div>
-            <div class="stat-item"><small>إجمالي السكترات</small><h2 style="color:var(--gold)">${st.s}</h2></div>`;
+            <div class="stat-card"><small>المشتركين</small><h2>${st.u}</h2></div>
+            <div class="stat-card"><small>السكترات</small><h2>${st.s}</h2></div>`;
         document.getElementById('alertsBox').innerHTML = alerts || 'الشبكة مستقرة ✅';
-        document.getElementById('fastLinks').innerHTML = fast;
     }
 
     function importXl(e) {
-        const file = e.target.files[0];
-        if(!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
             const data = new Uint8Array(ev.target.result);
             const wb = XLSX.read(data, {type: 'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
-            
             db = []; let curT = null;
             rows.forEach(row => {
                 const cells = row.map(c => String(c || '').trim());
                 if(cells.join(' ').includes("برج")) {
-                    curT = { name: cells.find(c => c.includes("برج")), sw:'', ma:'', sl:'', sectors: [] };
+                    curT = { name: cells.find(c => c.includes("برج")), sectors: [] };
                     db.push(curT);
                 } else if (curT && cells.some(c => c.includes("10.205."))) {
-                    let ip = cells.find(c => c.includes("10.205."));
-                    curT.sectors.push({ 
-                        name: cells[1] || "سكتر غير معروف", 
-                        ip: ip, 
-                        device: 'SXT/LHG', 
-                        users: cells.filter(c => c.length > 2 && !c.includes("10.205") && !c.includes("برج")) 
-                    });
+                    curT.sectors.push({ name: cells[1] || "سكتر", ip: cells.find(c => c.includes("10.205.")), device: 'SXT/LHG', users: cells.filter(c => c.length > 2 && !c.includes("10.205") && !c.includes("برج")) });
                 }
             });
             save();
-            alert("تم استيراد " + db.length + " برج بنجاح!");
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(e.target.files[0]);
     }
-
     window.onload = render;
 </script>
 </body>
