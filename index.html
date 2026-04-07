@@ -3,58 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الشبكة - جار القمر</title>
+    <title>جار القمر Pro v49 | النظام الشامل</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
-    <div class="container">
-        <div class="stats-section">
-            <div class="header">
-                <h2>إحصائيات الشبكة <i class="fas fa-chart-line"></i></h2>
-            </div>
-            
-            <div class="stat-card">
-                <span>إجمالي المشتركين</span>
-                <h1 id="total-subs">89</h1>
-            </div>
-
-            <div class="stat-card">
-                <span>إجمالي السكترات</span>
-                <h1 id="total-sectors" style="color: #f1c40f;">13</h1>
-            </div>
-
-            <hr style="border: 0.5px solid #30363d; margin: 20px 0;">
-
-            <div class="warning-header">
-                <h3><i class="fas fa-exclamation-triangle"></i> تنبيهات المتابعة</h3>
-            </div>
-
-            <div id="status-list" class="status-list">
-                </div>
+    <div class="top-nav">
+        <div class="logo"> <i class="fas fa-network-wired"></i> جار القمر Pro v49 </div>
+        <div class="top-buttons">
+            <button class="btn-green"> <i class="fas fa-plus"></i> برج يدوي </button>
+            <label for="excel-upload" class="btn-yellow">
+                <i class="fas fa-file-download"></i> استيراد الإكسل الشامل
+            </label>
+            <input type="file" id="excel-upload" accept=".xlsx, .xls" style="display:none">
         </div>
+    </div>
 
-        <div class="control-section">
-            <div class="search-box">
-                <label>بحث سريع <i class="fas fa-search"></i></label>
-                <input type="text" id="searchInput" placeholder="ابحث عن اسم، رقم، أو برج...">
-            </div>
-
-            <div class="tower-select">
-                <label>تصفية حسب البرج:</label>
+    <div class="main-layout">
+        <div class="right-sidebar">
+            <div class="search-section">
+                <h3><i class="fas fa-search"></i> بحث سريع</h3>
+                <input type="text" id="searchInput" placeholder="ابحث عن أي شيء...">
+                
+                <label>اختر البرج:</label>
                 <select id="towerFilter">
-                    <option value="all">كل الأبراج</option>
-                    <option value="برج احسان 4">برج احسان 4</option>
-                    <option value="برج المركز">برج المركز</option>
-                    <option value="برج كرار">برج كرار</option>
+                    <option>برج احسان 4</option>
+                    <option>برج المركز</option>
                 </select>
             </div>
 
-            <div class="quick-links">
-                <p>اختصارات الدخول:</p>
-                <div id="quick-buttons">
+            <div class="alerts-section">
+                <h3 style="color: #ff4757;"><i class="fas fa-exclamation-triangle"></i> دخول مباشر للأعطال:</h3>
+                <div id="quick-links">
+                    <button class="btn-orange">دخول - Karrar-B2-07814120492</button>
+                    <button class="btn-orange">دخول - Karrar-C1-07814120492</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="tower-header">
+                <span class="tower-title">برج احسان 4</span>
+                <span class="sector-count">13 سكتر</span>
+                <i class="fas fa-trash delete-icon"></i>
+            </div>
+
+            <div class="sectors-grid" id="main-display">
+                <div class="sector-card">
+                    <div class="sector-info">
+                        <div class="info-row"><span>اسم السكتر:</span> <strong>Karrar-A1-07814120492</strong></div>
+                        <div class="info-row"><span>IP السكتر:</span> <strong>10.205.235.5</strong></div>
+                        <div class="info-row"><span>موديل الجهاز:</span> <strong>SXT, LHG...</strong></div>
                     </div>
+                    <div class="users-section">
+                        <span class="user-count">6 مستخدم</span>
+                        <div class="user-tags">
+                            <span>مصطفى صلاح هلال <i class="fas fa-times"></i></span>
+                            <span>علاء عبد الله مطلب <i class="fas fa-times"></i></span>
+                        </div>
+                    </div>
+                    <button class="btn-login" onclick="window.open('http://10.205.235.5')">دخول مباشر</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="left-sidebar">
+            <h3><i class="fas fa-chart-pie"></i> إحصائيات</h3>
+            <div class="stat-box">
+                <p>إجمالي المشتركين</p>
+                <h2 style="color: #2ecc71;">89</h2>
+            </div>
+            <div class="stat-box">
+                <p>إجمالي السكترات</p>
+                <h2 style="color: #f1c40f;">13</h2>
+            </div>
+            <div class="alert-list">
+                <p style="color: #e74c3c;">📍 سكترات بحاجة لمتابعة</p>
+                <div class="alert-item">📍 برج احسان 4 (ممتلئ)</div>
             </div>
         </div>
     </div>
