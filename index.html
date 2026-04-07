@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جار القمر Pro v49 | التحكم الكامل</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --bg: #030612; --panel: #0f172a; --accent: #0ea5e9;
@@ -13,24 +15,30 @@
             --success: #22c55e; --text: #f1f5f9; --border: #1e293b;
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
         .side-right { width: 320px; background: var(--panel); border-left: 1px solid var(--border); padding: 15px; overflow-y: auto; order: 1; }
         .main-col { flex: 1; background: #000; display: flex; flex-direction: column; overflow: hidden; order: 2; border-right: 2px solid var(--accent); }
         .side-left { width: 300px; background: var(--panel); border-right: 1px solid var(--border); padding: 15px; overflow-y: auto; order: 3; }
+
         header { padding: 10px 25px; background: #111827; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        
         .tower-card { background: #0a0f1d; border: 1px solid var(--border); border-radius: 15px; margin-bottom: 30px; padding: 20px; position: relative; }
         .tower-title { color: #0ea5e9; font-size: 28px; text-align: center; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        
         .tower-stats-top { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .master-box { background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 8px; text-align: center; }
         .master-box label { display: block; color: var(--gold); font-size: 12px; margin-bottom: 4px; }
         .master-box input { width: 100%; background: transparent; border: none; color: #fff; text-align: center; font-size: 14px; outline: none; }
+        
         .sector-box { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); border-right: 5px solid var(--accent); border-radius: 10px; padding: 15px; margin-bottom: 15px; position: relative; }
         .inputs-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .inputs-group input { background: #000; border: 1px solid var(--border); color: #fff; padding: 6px; border-radius: 4px; width: 100%; text-align: center; font-size: 13px; }
+        
         .user-pill { background: #1e293b; border: 1px solid #334155; padding: 4px 10px; border-radius: 5px; margin: 3px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
-        .btn-action { cursor: pointer; border: none; border-radius: 5px; padding: 5px 10px; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        .btn-action { cursor: pointer; border: none; border-radius: 5px; padding: 8px 12px; font-weight: bold; font-size: 12px; transition: 0.2s; }
         .btn-blue { background: var(--accent); color: #fff; width: 100%; margin-top: 5px; }
         .btn-gold { background: var(--gold); color: #000; }
-        .btn-red { background: var(--danger); color: #fff; }
+        
         select, .search-input { width: 100%; padding: 10px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; margin-top: 5px; }
         .stat-card { background: #111827; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: center; border-bottom: 2px solid var(--accent); }
     </style>
@@ -38,8 +46,8 @@
 <body>
 
     <aside class="side-right">
-        <h3>🔍 بحث وشغل سريع</h3>
-        <input type="text" id="searchBox" class="search-input" placeholder="ابحث عن اسم، IP، أو سكتر..." onkeyup="render()">
+        <h3>🔍 بحث سريع</h3>
+        <input type="text" id="searchBox" class="search-input" placeholder="ابحث..." onkeyup="render()">
         <div style="margin-top:20px;">
             <label>قائمة الأبراج:</label>
             <select id="towerSelector" size="18" onchange="render()"></select>
@@ -53,13 +61,15 @@
     <main class="main-col">
         <header>
             <div style="display:flex; gap:10px;">
-                <button class="btn-action btn-gold" onclick="document.getElementById('xlIn').click()">📥 سحب إكسل جديد</button>
+                <button class="btn-action btn-gold" onclick="document.getElementById('xlIn').click()">📥 استيراد الإكسل الشامل</button>
                 <button class="btn-action" style="background:var(--success); color:#fff" onclick="addTower()">+ إضافة برج</button>
-                <input type="file" id="xlIn" hidden onchange="importXl(event)">
+                <input type="file" id="xlIn" style="display:none" onchange="importXl(event)" accept=".xlsx, .xls">
             </div>
-            <h2 style="margin:0;">جار القمر Pro v49 <i class="fas fa-layer-group"></i></h2>
+            <h2 style="margin:0;">جار القمر Pro v49</h2>
         </header>
-        <div id="mainStage" style="padding: 20px; overflow-y: auto; flex: 1;"></div>
+        <div id="mainStage" style="padding: 20px; overflow-y: auto; flex: 1;">
+            <center id="welcome" style="margin-top:100px; opacity:0.3;">ارفع ملف الإكسل للبدء بمزامنة البيانات</center>
+        </div>
     </main>
 
     <aside class="side-left">
@@ -72,7 +82,10 @@
 <script>
     let db = JSON.parse(localStorage.getItem('JAR_V49_FINAL_DB')) || [];
 
-    function save() { localStorage.setItem('JAR_V49_FINAL_DB', JSON.stringify(db)); render(); }
+    function save() { 
+        localStorage.setItem('JAR_V49_FINAL_DB', JSON.stringify(db)); 
+        render(); 
+    }
 
     function render() {
         const stage = document.getElementById('mainStage');
@@ -89,32 +102,33 @@
             t.sectors.forEach((s, si) => {
                 if(q && !JSON.stringify(s).toLowerCase().includes(q)) return;
                 st.s++; st.u += s.users.length;
+                
                 if(s.users.length >= 8) {
                     alerts += `<div class="stat-card" style="color:var(--danger)">📍 ${t.name} > ${s.name}</div>`;
-                    fast += `<button class="btn-action" style="background:var(--warn); width:100%; margin-bottom:5px;" onclick="window.open('http://${s.ip}')">${s.name}</button>`;
+                    fast += `<button class="btn-action" style="background:var(--warn); width:100%; margin-bottom:5px;" onclick="window.open('http://${s.ip}')">دخول - ${s.name}</button>`;
                 }
 
                 sHTML += `
                 <div class="sector-box">
-                    <i class="fas fa-times-circle" style="position:absolute; top:5px; left:5px; color:var(--danger); cursor:pointer;" onclick="if(confirm('حذف السكتر؟')){db[${ti}].sectors.splice(${si},1); save()}"></i>
+                    <i class="fas fa-times" style="position:absolute; top:5px; left:5px; color:var(--danger); cursor:pointer;" onclick="if(confirm('حذف؟')){db[${ti}].sectors.splice(${si},1); save()}"></i>
                     <div class="inputs-group">
                         <input value="${s.name}" onchange="db[${ti}].sectors[${si}].name=this.value; save()">
                         <input value="${s.ip}" onchange="db[${ti}].sectors[${si}].ip=this.value; save()">
                         <input value="${s.device}" onchange="db[${ti}].sectors[${si}].device=this.value; save()">
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <button class="btn-action btn-blue" style="width:45%" onclick="window.open('http://${s.ip}')">دخول السكتر</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <button class="btn-action btn-blue" style="width:45%" onclick="window.open('http://${s.ip}')">دخول مباشر</button>
                         <span style="color:var(--accent); font-weight:bold;">${s.users.length} مستخدم</span>
                     </div>
                     <div>
                         ${s.users.map((u, ui) => `
                             <span class="user-pill">
-                                <i class="fas fa-exchange-alt" style="color:var(--gold); cursor:pointer" title="نقل المشترك" onclick="transferUser(${ti}, ${si}, ${ui})"></i>
+                                <i class="fas fa-exchange-alt" style="color:var(--gold); cursor:pointer" onclick="transferUser(${ti}, ${si}, ${ui})"></i>
                                 ${u}
                                 <i class="fas fa-trash" style="color:var(--danger); cursor:pointer" onclick="db[${ti}].sectors[${si}].users.splice(${ui},1); save()"></i>
                             </span>
                         `).join('')}
-                        <button class="btn-action" style="background:var(--success); color:#fff; border-radius:50%" onclick="let n=prompt('اسم المشترك:'); if(n){db[${ti}].sectors[${si}].users.push(n); save()}">+</button>
+                        <button class="btn-action" style="background:var(--success); color:#fff; border-radius:50%; padding:2px 8px;" onclick="let n=prompt('اسم المشترك:'); if(n){db[${ti}].sectors[${si}].users.push(n); save()}">+</button>
                     </div>
                 </div>`;
             });
@@ -129,56 +143,72 @@
                     <div class="master-box"><label>SW</label><input value="${t.sw||''}" onchange="db[${ti}].sw=this.value; save()"><button class="btn-action btn-blue" onclick="window.open('http://${t.sw}')">دخول</button></div>
                 </div>
                 ${sHTML}
-                <button class="btn-action btn-blue" onclick="addSector(${ti})">+ إضافة سكتر للبرج</button>
+                <button class="btn-action btn-blue" onclick="addSector(${ti})">+ إضافة سكتر</button>
             </div>`;
         });
 
         document.getElementById('towerSelector').innerHTML = opts;
         if(sel) document.getElementById('towerSelector').value = sel;
-        stage.innerHTML = html;
-        document.getElementById('statsBox').innerHTML = `<div class="stat-card"><h2>${st.u}</h2><small>مشترك كلي</small></div><div class="stat-card"><h2>${st.s}</h2><small>سكتر كلي</small></div>`;
+        stage.innerHTML = html || '<center style="opacity:0.3; margin-top:100px;">ارفع ملف الإكسل للبدء</center>';
+        document.getElementById('statsBox').innerHTML = `<div class="stat-card"><h2>${st.u}</h2><small>مشترك</small></div><div class="stat-card"><h2>${st.s}</h2><small>سكتر</small></div>`;
         document.getElementById('alertsBox').innerHTML = alerts || '✅ الشبكة مستقرة';
         document.getElementById('fastLinks').innerHTML = fast;
     }
 
-    // وظيفة نقل المشترك بقائمة منسدلة
-    function transferUser(ti, si, ui) {
-        let user = db[ti].sectors[si].users[ui];
-        let targetTower = prompt("ادخل رقم البرج من القائمة (0, 1, 2...):");
-        if(targetTower && db[targetTower]) {
-            let targetSector = prompt("ادخل رقم السكتر في هذا البرج (0, 1, 2...):");
-            if(targetSector && db[targetTower].sectors[targetSector]) {
-                db[targetTower].sectors[targetSector].users.push(user);
-                db[ti].sectors[si].users.splice(ui, 1);
-                save();
-                alert("تم نقل " + user + " بنجاح!");
-            }
-        }
-    }
-
-    function addSector(ti) { db[ti].sectors.push({name:'سكتر جديد', ip:'', device:'SXT/LHG', users:[]}); save(); }
-    function addTower() { let n = prompt("اسم البرج:"); if(n) {db.push({name:n, sw:'', ma:'', sl:'', sectors:[]}); save();} }
-    
     function importXl(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
         const reader = new FileReader();
         reader.onload = (ev) => {
             const data = new Uint8Array(ev.target.result);
-            const wb = XLSX.read(data, {type: 'array'});
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1});
-            db = []; let curT = null;
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+            
+            let newDb = [];
+            let curT = null;
+
             rows.forEach(row => {
                 const cells = row.map(c => String(c || '').trim());
-                if (cells.join(' ').includes("برج")) {
-                    curT = { name: cells.find(c => c.includes("برج")), sw:'', ma:'', sl:'', sectors: [] };
-                    db.push(curT);
-                } else if (curT && cells.some(c => c.includes("10.205."))) {
-                    curT.sectors.push({ name: cells[1]||"سكتر", ip: cells.find(c => c.includes("10.205.")), device: 'SXT, LHG', users: cells.filter(c => c.length > 2 && !c.includes("10.205") && !c.includes("برج")) });
+                // التحقق من اسم البرج
+                let tName = cells.find(c => c.includes("برج"));
+                if (tName) {
+                    curT = { name: tName, sw:'', ma:'', sl:'', sectors: [] };
+                    newDb.push(curT);
+                } 
+                // التحقق من السكتر والمشتركين عبر الـ IP
+                else if (curT) {
+                    let ip = cells.find(c => c.startsWith("10.205."));
+                    if (ip) {
+                        curT.sectors.push({
+                            name: cells[1] || "سكتر",
+                            ip: ip,
+                            device: 'SXT, LHG',
+                            users: cells.filter(c => c.length > 2 && !c.startsWith("10.205.") && !c.includes("برج"))
+                        });
+                    }
                 }
             });
-            save();
+            if(newDb.length > 0) { db = newDb; save(); alert("تم سحب " + db.length + " برج بنجاح!"); }
         };
-        reader.readAsArrayBuffer(e.target.files[0]);
+        reader.readAsArrayBuffer(file);
     }
+
+    function transferUser(ti, si, ui) {
+        let u = db[ti].sectors[si].users[ui];
+        let tIdx = prompt("رقم البرج الجديد (0, 1, 2...):");
+        let sIdx = prompt("رقم السكتر الجديد (0, 1, 2...):");
+        if(db[tIdx] && db[tIdx].sectors[sIdx]) {
+            db[tIdx].sectors[sIdx].users.push(u);
+            db[ti].sectors[si].users.splice(ui, 1);
+            save();
+        }
+    }
+
+    function addSector(ti) { db[ti].sectors.push({name:'سكتر جديد', ip:'', device:'', users:[]}); save(); }
+    function addTower() { let n = prompt("الاسم:"); if(n) {db.push({name:n, sw:'', ma:'', sl:'', sectors:[]}); save();} }
+    
     window.onload = render;
 </script>
 </body>
